@@ -1,4 +1,4 @@
-#! @revision   2020-08-17 (Mon) 07:31:26
+#! @revision   2020-08-17 (Mon) 09:46:58
 #! @brief      Makefile port of Bootstrap 4's _npm_ build
 
 SHELL          = /bin/ksh
@@ -141,7 +141,7 @@ docs-serve-only:
 	@bundle exec jekyll serv --skip-initial-build --no-watche
 
 distclean: realclean
-	@rm -rf [^M]* M[^a]* Ma[^k]* .[^.]* 2>/dev/null; truen
+	@rm -rf $$(ls -1a | egrep -v '^(\.|\.\.|\.git|Makefile|README.md)$$'); true
 
 init: package.json
 	@npm install
