@@ -10,5 +10,15 @@ make init
 make dist
 ```
 
+All `npm run` command are available as `make` (e.g. `make dist` in lieu of `npm run dist`).
+
+Additional targets:
+
+| Target | Purpose |
+| :----- | :------ |
+| `clean` | Remove temporary files and `dist` directory. |
+| `realclean` | Remove build environment, in particular `node_modules`. |
+| `distclean` | Purge directory except this repositorїes files. |
+
 Enjoy!
 
