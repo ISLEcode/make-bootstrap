@@ -1,12 +1,12 @@
-#! @revision   2020-08-17 (Mon) 09:46:58
+#! @revision   2020-08-19 (Wed) 21:26:44
 #! @brief      Makefile port of Bootstrap 4's _npm_ build
 
 SHELL          = /bin/ksh
 
 NAME           = bootstrap
 DESCRIPTION    = The most popular front-end framework for developing responsive, mobile first projects on the web.
-VERSION        = 4.5.2
-VERSION_SHORT  = 4.5
+VERSION        = 5.0.0-alpha1
+VERSION_SHORT  = 5.0
 TARBALL        = v$(VERSION).tar.gz
 SOURCEURL      = https://github.com/twbs/bootstrap/archive/$(TARBALL)
 SOURCEDIR      = $(NAME)-$(VERSION)
@@ -141,7 +141,7 @@ docs-serve-only:
 	@bundle exec jekyll serv --skip-initial-build --no-watche
 
 distclean: realclean
-	@rm -rf $$(ls -1a | egrep -v '^(\.|\.\.|\.git|Makefile|README.md)$$'); true
+	@rm -rf $$(ls -1a | egrep -v '^(\.|\.\.|\.git|Makefile|README.md|migration)$$'); true
 
 init: package.json
 	@npm install
@@ -227,12 +227,12 @@ lockfile-lint:
 netlify: dist release-sri docs-netlify
 
 package.json:
-	[[ -f $(TARBALL)        ]] || curl -SsLO $(SOURCEURL)
-	[[ -d $(SOURCEDIR)      ]] || tar xf $(TARBALL)
-	[[ -d $(SOURCEDIR)/.git ]] && rm -rf $(SOURCEDIR)/.git; true
-	[[ -f package.json      ]] || mv -n $(SOURCEDIR)/* $(SOURCEDIR)/.* .
-	[[ -d $(SOURCEDIR)      ]] && rm -rf $(SOURCEDIR); true
-	[[ -f $(TARBALL)        ]] && rm $(TARBALL); true
+	@[[ -f $(TARBALL)        ]] || curl -SsLO $(SOURCEURL)
+	@[[ -d $(SOURCEDIR)      ]] || tar xf $(TARBALL)
+	@[[ -d $(SOURCEDIR)/.git ]] && rm -rf $(SOURCEDIR)/.git; true
+	@[[ -f package.json      ]] || mv -n $(SOURCEDIR)/* $(SOURCEDIR)/.* .
+	@[[ -d $(SOURCEDIR)      ]] && rm -rf $(SOURCEDIR); true
+	@[[ -f $(TARBALL)        ]] && rm $(TARBALL); true
 
 realclean: clean
 	rm -rf node_modules
