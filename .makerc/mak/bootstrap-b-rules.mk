@@ -1,4 +1,4 @@
-#! @revision  2021-04-13 (Tue) 17:55:25
+#! @revision  2021-04-13 (Tue) 18:26:37
 #! @brief     Makefile port of Bootstrap's npm(1) build
 
 all: dist
@@ -24,7 +24,8 @@ realclean: clean
 	@rm -rf node_modules
 
 distclean: realclean
-	@rm -rf $$(ls -1a | egrep -v '^(\.|\.\.|\.git|Make.*|README.md)$$'); true
+	@cp $(MAKERC)/etc/gitignore .gitignore
+	@git clean -fdX
 
 bundlewatch:
 	@$(BUNDLEWATCH) $(BUNDLEWATCH_OPTS) --config .bundlewatch.config.json
