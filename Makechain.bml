@@ -1,0 +1,89 @@
+revision  : 2021-01-09 (Sat) 00:41:12
+brief     : Bootstrap 5 build toolchain
+tags      : w3-toolchain
+bookmarks :
+
+  - name  : bundlewatch
+    desc  : Keep watch of your bundle size
+    repo  : https://github.com/bundlewatch/bundlewatch
+    site  : https://bundlewatch.io
+    tags  :
+
+  - name  : cleancss
+    desc  : Fast and efficient CSS optimizer for node.js and the Web
+    repo  : https://github.com/jakubpawlowicz/clean-css
+    site  : jakubpawlowicz.github.io/clean-css
+    tags  :
+
+  - name  : eslint
+    desc  : Find and fix problems in your JavaScript code.
+    repo  : https://github.com/eslint/eslint
+    site  : https://eslint.org
+    tags  :
+
+  - name  : fusv
+    desc  : Simple tool to find unused Sass variables
+    repo  : https://github.com/XhmikosR/find-unused-sass-variables
+    site  : https://github.com/XhmikosR/find-unused-sass-variables
+    tags  :
+
+  - name  : karma
+    desc  : Test runner for JavaScript
+    repo  : https://github.com/karma-runner/karma
+    site  : http://karma-runner.github.io
+    tags  :
+
+  - name  : lockfile-lint
+    desc  : Lint an npm or yarn lockfile to analyze and detect security issues
+    repo  : https://github.com/lirantal/lockfile-lint
+    site  : https://github.com/lirantal/lockfile-lint
+    tags  :
+
+  - name  : node-saas
+    desc  : Node.js bindings to libsass
+    repo  : https://github.com/sass/node-sass
+    site  : https://npmjs.org/package/node-sass
+    tags  :
+
+  - name  : nodemon
+    desc  : Nodemon is a utility that will monitor for any changes in your source and automatically restart your server. Perfect for development. Install it using npm.
+    repo  : https://github.com/remy/nodemon
+    site  : https://nodemon.io
+    tags  :
+
+  - name  : linkinator
+    desc  : Scurry around your site and find all those broken links.
+    repo  : https://github.com/JustinBeckwith/linkinator
+    site  : https://github.com/JustinBeckwith/linkinator
+    tags  :
+
+  - name  : postcss
+    desc  : A tool for transforming CSS with JavaScript
+    repo  : https://github.com/postcss/postcss
+    site  : https://postcss.org
+    tags  :
+
+  - name  : rollup
+    desc  : Fast and efficient CSS optimizer for node.js and the Web
+    repo  : https://github.com/rollup/rollup
+    site  : https://rollupjs.org/guide/en
+    tags  :
+
+  - name  : sirv
+    desc  : An optimized middleware & CLI application for serving static files!
+    repo  : https://github.com/lukeed/sirv
+    tags  :
+
+  - name  : stylelint
+    desc  : A mighty, modern linter that helps you avoid errors and enforce conventions in your styles.
+    repo  :
+    site  : https://stylelint.io
+    tags  :
+
+  - name  : terser
+    desc  : JavaScript parser, mangler and compressor toolkit for ES6+
+    repo  : https://github.com/terser/terser
+    site  : https://terser.org
+    tags  :
+
+# vim: sw=4
