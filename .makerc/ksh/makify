@@ -1,0 +1,231 @@
+#! /ksh
+
+function makify {
+
+    # Utility to semi-automatically convert a `package.json` to a Makefile.
+    #
+    # usage: jsontomakefile package.json
+
+    # Convert JSON to KAML and load it
+    typeset package=$1
+    eval "$(df-y2k -ap yaml $package)"
+
+    # Output Makefile's header comments
+    printf "#! @revision  %T\n"
+    printf "#! @brief     Makefile port of Bootstrap %s's npm(1) build\n\n" ${yaml[version_short]}
+
+    # Make sure we are using a Korn shell
+    printf 'SHELL          = %s\n\n' $(whence ksh)
+
+    # Collect essential information from JSON file
+    printf 'NAME           = %s\n'   "${yaml[name]}"
+    printf 'DESCRIPTION    = %s\n'   "${yaml[description]}"
+    printf 'VERSION        = %s\n'   "${yaml[version]}"
+    printf 'VERSION_SHORT  = %s\n'   "${yaml[version_short]}"
+    printf 'LICENSE        = %s\n\n' "${yaml[license]}"
+
+    print 'TARBALL        = v\$(VERSION).tar.gz'
+    print 'SOURCEURL      = https://github.com/twbs/bootstrap/archive/\$(TARBALL)'
+    print 'SOURCEDIR      = $(NAME)-$(VERSION)'
+    print 'HOMEPAGE       = https://getbootstrap.com/'
+    print 'AUTHOR         = The Bootstrap Authors (https://github.com/twbs/bootstrap/graphs/contributors)'
+    print 'STYLE          = dist/css/bootstrap.css'
+    print 'SASS           = scss/bootstrap.scss'
+    print 'MAIN           = dist/js/bootstrap.js'
+    print 'GITURL         = git+https://github.com/twbs/bootstrap.git'
+    print 'ISSUESURL      = https://github.com/twbs/bootstrap/issues'
+
+    print "DISTFILES      = dist/{css,js}/*.{css,js,map}"
+    print "JSFILES        = js/{src,dist}/**/*.{js,map}"
+    print "SCSSFILES      = scss/**/*.scss"
+
+    print "DOCS_PREFIX    = site/docs/\$(VERSION_SHORT)"
+    print "DOCS_DISTDIR   = \$(DOCS_PREFIX)/dist"
+    print "DOCS_ASSETSDIR = \$(DOCS_PREFIX)/assets"
+
+    print "NODEBIN        = node_modules/.bin"
+    print "BUNDLEWATCH    = \$(NODEBIN)/bundlewatch"
+    print "CLEANCSS       = \$(NODEBIN)/cleancss"
+    print "CLEANCSS_OPTS  = --level 1 --format breakWith=lf --source-map --source-map-inline-sources"
+    print "ESLINT         = \$(NODEBIN)/eslint"
+    print "ESLINT_OPTS    = --report-unused-disable-directives --cache --cache-location .cache/.eslintcache"
+    print "FUSV           = \$(NODEBIN)/fusv"
+    print "FUSV_OPTS      ="
+    print "HUGO           = \$(NODEBIN)/hugo"
+    print "KARMA          = \$(NODEBIN)/karma"
+    print "KARMA_OPTS     ="
+    print "LINKINATOR     = \$(NODEBIN)/linkinator"
+    print "LOCKLINT       = \$(NODEBIN)/lockfile-lint"
+    print "LOCKLINT_OPTS  = --allowed-hosts npm --allowed-schemes https: --empty-hostname false --type npm"
+    print "NODE           = $(whence node)"
+    print "NODEMON        = \$(NODEBIN)/ṅodemon"
+    print "NODEMON_OPTS   = "
+    print "NPM            = $(whence npm)"
+    print "POSTCSS        = \$(NODEBIN)/postcss"
+    print "POSTCSS_OPTS   = --config build/postcss.config.js"
+    print "ROLLUP         = \$(NODEBIN)/rollup"
+    print "ROLLUP_OPTS    ="
+    print "SASSC          = \$(NODEBIN)/node-sass"
+    print "SASSC_OPTS     = --output-style expanded --source-map true --source-map-contents true --precision 6"
+    print "SIRV           = \$(NODEBIN)/sirv"
+    print "STYLELINT      = \$(NODEBIN)/stylelint"
+    print "STYLELINT_OPTS = --cache --cache-location .cache/.stylelintcache"
+    print "TERSER         = \$(NODEBIN)/terser"
+    print "TERSER_OPTS    = --compress typeofs=false --mangle --comments "/^!/""
+
+    print "\nall: dist\n"
+
+    print "remake:"
+    print "\t@source ./Makefuncs; jsontomakefile package.json > Makefile.new\n"
+
+    print "package.json:"
+    print "\t@[[ -f \$(TARBALL)        ]] || curl -SsLO \$(SOURCEURL)"
+    print "\t@[[ -d \$(SOURCEDIR)      ]] || tar xf \$(TARBALL)"
+    print "\t@[[ -d \$(SOURCEDIR)/.git ]] && rm -rf \$(SOURCEDIR)/.git; true"
+    print "\t@[[ -f package.json      ]] || mv -n \$(SOURCEDIR)/* \$(SOURCEDIR)/.* ."
+    print "\t@[[ -d \$(SOURCEDIR)      ]] && rm -rf \$(SOURCEDIR); true"
+    print "\t@[[ -f \$(TARBALL)        ]] && rm \$(TARBALL); true\n"
+
+    print "init: package.json"
+    print "\t@npm install\n"
+
+    print "clean:"
+    print "\t@[[ -d dist ]] && rm -rf dist; true\n"
+
+    print "realclean: clean"
+    print "\t@rm -rf node_modules\n"
+
+    print "distclean: realclean"
+    print "\t@rm -rf \$\$(ls -1a | egrep -v '^(\.|\.\.|\.git|Make.*|README.md)\$\$'); true\n"
+
+    # Process all _scripts_ configured in the package
+    nameref scripts=yaml['scripts']; typeset target; for target in ${!scripts[@]}; do
+
+        print -r "${scripts[$target]}" | read command arguments
+        target=${target//_/-}
+
+        case $command in
+            cleancss)
+
+                arguments=" $arguments"
+                arguments="${arguments// --level 1/}"
+                arguments="${arguments// --format breakWith=lf/}"
+                arguments="${arguments// \--source-map-inline-sources/}"
+                arguments="${arguments// \--source-map/}"
+                print "$target:\n\t@$command $arguments\n"
+
+                ;;
+            cross-env|cross-env-shell)
+
+                # If enclosed in quotes, strip these
+                [[ ${arguments:0:1} == \" ]] && arguments="${arguments:1:${#arguments}-2}"
+
+                # Pass on shell commands as is
+                print "$target:\n\t@$arguments\n"
+
+                ;;
+            eslint)
+
+                arguments=" $arguments"
+                arguments="${arguments// \--report-unused-disable-directives/}"
+                arguments="${arguments// \--cache-location .cache?.eslintcache/}"
+                arguments="${arguments// \--cache/}"
+                print "$target:\n\t@$command $arguments\n"
+
+                ;;
+            lockfile-lint)
+
+                arguments=" $arguments"
+                arguments="${arguments// --allowed-hosts npm/}"
+                arguments="${arguments// --allowed-schemes https:/}"
+                arguments="${arguments// --empty-hostname false/}"
+                arguments="${arguments// --type npm/}"
+                print "$target:\n\t@$command $arguments\n"
+
+                ;;
+            node-sass)
+
+                arguments=" $arguments"
+                arguments="${arguments// --output-style expanded/}"
+                arguments="${arguments// --source-map true/}"
+                arguments="${arguments// --source-map-contents true/}"
+                arguments="${arguments// --precision 6/}"
+                print "$target:\n\t@$command $arguments\n"
+
+                ;;
+            postcss)
+
+                arguments=" $arguments"
+                arguments="${arguments// --config build/postcss.config.js/}"
+                print "$target:\n\t@$command $arguments\n"
+
+                ;;
+            stylelint)
+
+                arguments=" $arguments"
+                arguments="${arguments// \--cache/}"
+                arguments="${arguments// --cache-location .cache/.stylelintcache/}"
+                print "$target:\n\t@$command $arguments\n"
+
+                ;;
+            terser)
+
+                arguments=" $arguments"
+                arguments="${arguments// \--compress/}"
+                arguments="${arguments// \--mangle/}"
+                arguments="${arguments// --comments \"\/^!\/\"/}"
+                print "$target:\n\t$command $arguments\n"
+
+                ;;
+            bundlewatch|fusv|karma|hugo|linkinator|ncu|node|nodemon|npm|rollup|sirv)
+
+                # Output target's rule using make(1) variables for command
+                print "$target:\n\t@$command $arguments\n"
+
+                ;;
+            npm-run-all)
+
+                # Ignore all options passed to command
+                while [[ $arguments == --* ]]; do arguments="${arguments#* }"; done
+
+                # Output the target's rule which simply links to other targets
+                printf "$target:"; for a in $arguments; do
+                    [[ $a == *\* ]] || { printf " $a"; continue; }
+                    typeset t; for t in ${!scripts[@]}; do t=${t//_/-}; [[ $t == ${a%\*}* ]] && printf " $t"; done
+                done; print "\n"
+
+                ;;
+
+            *)
+                print "\n# TODO: $target:\n#\t$command $arguments\n"
+                ;;
+        esac
+
+    done | sed \
+    -e $'s/ *[&][&] */\\\n\t@/g' \
+    -e 's/\$npm_package_version/$(VERSION)/g' \
+    -e $'s/[[:<:]]bundlewatch /\$(BUNDLEWATCH) \$(BUNDLEWATCH_OPTS) /g' \
+    -e $'s/[[:<:]]cleancss /\$(CLEANCSS) \$(CLEANCSS_OPTS) /g' \
+    -e $'s/[[:<:]]eslint /\$(ESLINT) \$(ESLINT_OPTS) /g' \
+    -e $'s/[[:<:]]fusv /\$(FUSV) \$(FUSV_OPTS) /g' \
+    -e $'s/[[:<:]]karma /\$(KARMA) \$(KARMA_OPTS) /g' \
+    -e $'s/[[:<:]]hugo /\$(HUGO) \$(HUGO_OPTS) /g' \
+    -e $'s/[[:<:]]linkinator /\$(LINKINATOR) \$(LINKINATOR_OPTS) /g' \
+    -e $'s/[[:<:]]lockfile-lint /\$(LOCKLINT) \$(LOCKLINT_OPTS) /g' \
+    -e $'s/[[:<:]]ncu /\$(NCU) \$(NCU_OPTS) /g' \
+    -e $'s/[[:<:]]node /\$(NODE) \$(NODE_OPTS) /g' \
+    -e $'s/[[:<:]]node-sass /\$(SASSC) \$(SASSC_OPTS) /g' \
+    -e $'s/[[:<:]]nodemon /\$(NODEMON) \$(NODEMON_OPTS) /g' \
+    -e $'s/[[:<:]]npm /\$(NPM) \$(NPM_OPTS) /g' \
+    -e $'s/[[:<:]]npm-run-all /\$(MAKE) /g' \
+    -e $'s/[[:<:]]postcss /\$(POSTCSS) \$(POSTCSS_OPTS) /g' \
+    -e $'s/[[:<:]]rollup /\$(ROLLUP) \$(ROLLUP_OPTS) /g' \
+    -e $'s/[[:<:]]sirv /\$(SIRV) \$(SIRV_OPTS) /g' \
+    -e $'s/[[:<:]]stylelint /\$(STYLELINT) \$(STYLELINT_OPTS) /g' \
+    -e $'s/[[:<:]]terser /\$(TERSER) \$(TERSER_OPTS) /g'
+
+}
+
+jsontomakefile package.json
+
+# __END__
